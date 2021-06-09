@@ -5,6 +5,7 @@ namespace DotNetCoreDiDemo
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
+    using DotNetCoreDiDemo.Rules;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
@@ -135,6 +136,10 @@ namespace DotNetCoreDiDemo
             services.AddSingleton<IService, ServiceA>();
             services.AddSingleton<IService, ServiceB>();
             services.AddSingleton<IService, ServiceC>();
+
+            // Multiple implementation example
+            services.AddScoped<IGeneralRule, RuleOne>();
+            services.AddScoped<IGeneralRule, RuleTwo>();
         }
 
         /// <summary>
@@ -145,7 +150,7 @@ namespace DotNetCoreDiDemo
         /// </param>
         static void Main(string[] args)
         {
-            // Option #1
+            /*/ Option #1
             IService serviceA = Provider.GetRequiredService<Func<ServiceType, IService>>()((ServiceType)1);
             serviceA.DoSomething();
 
@@ -156,7 +161,26 @@ namespace DotNetCoreDiDemo
             // Option #3
             IEnumerable<IService> services = Provider.GetServices<IService>();
             IService serviceC = services.First(s => s.GetType() == typeof(ServiceC));
-            serviceC.DoSomething();
+            serviceC.DoSomething(); */
+
+
+            // Multiple implementation
+            IEnumerable<IGeneralRule> rules = Provider.GetServices<IGeneralRule>();
+
+            foreach (var rule in rules) 
+            {
+                if(rule is IRuleOne)
+                {
+                    (rule as IRuleOne).Apply();
+                }
+
+                if (rule is IRuleTwo) 
+                {
+                    (rule as IRuleTwo).ApplyTwo();
+                }
+            }
+
+            Logger.LogInformation("\nPress any key to exit.");
         }
     }
 }
