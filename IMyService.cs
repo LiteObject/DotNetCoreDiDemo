@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DotNetCoreDiDemo
+﻿namespace DotNetCoreDiDemo
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+
     /// <summary>
     /// The Service interface.
     /// </summary>
-    public interface IService
+    public interface IMyService
     {
         /// <summary>
         /// The do something.

@@ -1,11 +1,12 @@
 ﻿
+using DotNetCoreDiDemo.Library;
+
 namespace DotNetCoreDiDemo
 {
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
-    using DotNetCoreDiDemo.Rules;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
@@ -137,9 +138,16 @@ namespace DotNetCoreDiDemo
             services.AddSingleton<IService, ServiceB>();
             services.AddSingleton<IService, ServiceC>();
 
-            // Multiple implementation example
-            services.AddScoped<IGeneralRule, RuleOne>();
-            services.AddScoped<IGeneralRule, RuleTwo>();
+            services.AddScoped<IMyService, MyServiceOne>();
+            services.AddScoped<IMyService, MyServiceTwo>();
+
+            services.AddScoped<MyClass>(provider =>
+            {
+                var s = provider.GetRequiredService<IEnumerable<IMyService>>();
+                return new MyClass(s);
+            });
+
+            PrintRegisteredServices(services);
         }
 
         /// <summary>
@@ -162,25 +170,19 @@ namespace DotNetCoreDiDemo
             IEnumerable<IService> services = Provider.GetServices<IService>();
             IService serviceC = services.First(s => s.GetType() == typeof(ServiceC));
             serviceC.DoSomething(); */
-
-
-            // Multiple implementation
-            IEnumerable<IGeneralRule> rules = Provider.GetServices<IGeneralRule>();
-
-            foreach (var rule in rules) 
-            {
-                if(rule is IRuleOne)
-                {
-                    (rule as IRuleOne).Apply();
-                }
-
-                if (rule is IRuleTwo) 
-                {
-                    (rule as IRuleTwo).ApplyTwo();
-                }
-            }
-
+            
+            var myClass = Provider.GetRequiredService<MyClass>();
+            Logger.LogInformation(myClass.Get());
+            
             Logger.LogInformation("\nPress any key to exit.");
+        }
+
+        private static void PrintRegisteredServices(IServiceCollection services)
+        {
+            foreach (var service in services)
+            {
+                Logger.LogInformation($"{service.ImplementationType?.Name} -> {nameof(service.ImplementationInstance)}");
+            }
         }
     }
 }
